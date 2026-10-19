@@ -1,0 +1,317 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: EUPL-1.2 · Contenido docente: CC-BY-4.0 · © 2026 César Sánchez Meléndez -->
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Buscador de evidencia PICO</title>
+<meta name="description" content="Herramienta docente en abierto que guía desde la pregunta PICO hasta una estrategia de búsqueda reproducible: vocabulario controlado y texto libre traducidos a la sintaxis de PubMed, Embase, Cochrane y otras bases, documentados con PRISMA-S.">
+<meta name="author" content="César Sánchez Meléndez">
+<link rel="canonical" href="https://csmelendez.github.io/buscaPICO/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="César Sánchez Meléndez">
+<meta property="og:title" content="Buscador de evidencia PICO">
+<meta property="og:description" content="Herramienta docente en abierto que guía desde la pregunta PICO hasta una estrategia de búsqueda reproducible: vocabulario controlado y texto libre traducidos a la sintaxis de PubMed, Embase, Cochrane y otras bases, documentados con PRISMA-S.">
+<meta property="og:url" content="https://csmelendez.github.io/buscaPICO/">
+<meta property="og:locale" content="es_ES">
+<meta property="og:image" content="https://csmelendez.github.io/buscaPICO/img/og-buscador-pico.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Buscador de evidencia PICO: de la pregunta a la estrategia de búsqueda">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Buscador de evidencia PICO">
+<meta name="twitter:description" content="Herramienta docente en abierto: de la pregunta PICO a una estrategia de búsqueda reproducible, documentada con PRISMA-S.">
+<meta name="twitter:image" content="https://csmelendez.github.io/buscaPICO/img/og-buscador-pico.png">
+<link rel="stylesheet" href="fuentes.css">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<style>
+/* Misma familia visual que el Clasificador MDR/IVDR (paleta UCLM). Layout: ficha de la asignatura; banco de casos; pasos numerados (el orden es el del proceso); paso activo a la izquierda y resumen fijo de la estrategia a la derecha */
+:root{
+  --bg:#f6f7fa; --surface:#ffffff; --ink:#28363c; --muted:#56656c; --line:#dadfe2; --band:#e9edf0;
+  --accent:#b30033; --accent-soft:#f8e6ec; --accent-strong:#9c1c1c;
+  --ctrl:#2f5d8a; --ctrl-soft:#e6eef6;      /* vocabulario controlado */
+  --free:#6b4fa0; --free-soft:#efeaf7;      /* texto libre */
+  --ok:#23794f; --warn:#a77a05; --bad:#8c1d18; --code-bg:#f0f2f5; --logo-plate:transparent;
+  --font-display:"Archivo Narrow","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --font-ui:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-law:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --font-code:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121719; --surface:#1b2226; --ink:#e7ecee; --muted:#9aa8ae; --line:#2c373c; --band:#222b30;
+    --accent:#f27c96; --accent-soft:#3a1520; --accent-strong:#f7a3b5;
+    --ctrl:#8db8e3; --ctrl-soft:#18283a; --free:#b79ae8; --free-soft:#251e36;
+    --ok:#58c491; --warn:#e2b743; --bad:#ef5a4a; --code-bg:#151b1e; --logo-plate:#ffffff;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121719; --surface:#1b2226; --ink:#e7ecee; --muted:#9aa8ae; --line:#2c373c; --band:#222b30;
+  --accent:#f27c96; --accent-soft:#3a1520; --accent-strong:#f7a3b5;
+  --ctrl:#8db8e3; --ctrl-soft:#18283a; --free:#b79ae8; --free-soft:#251e36;
+  --ok:#58c491; --warn:#e2b743; --bad:#ef5a4a; --code-bg:#151b1e; --logo-plate:#ffffff;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:15px;line-height:1.5}
+.wrap{max-width:1220px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:28px 96px}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--font-code);font-size:.82rem}
+.eyebrow{font-family:var(--font-code);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.franja{height:6px;background:var(--accent)}
+
+/* Cabecera institucional (igual que el clasificador) */
+header.top{display:grid;gap:10px;padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:22px}
+header.top h1{font-family:var(--font-display);font-size:clamp(1.8rem,3.8vw,2.6rem);line-height:1.08;margin:0;font-weight:700;text-wrap:balance}
+header.top > p{margin:0;color:var(--muted);max-width:72ch}
+.marca{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px 28px;padding-bottom:18px;margin-bottom:6px;border-bottom:1px solid var(--line)}
+.marca .logo{display:block;flex:0 0 auto;background:var(--logo-plate);border-radius:8px;padding:4px 8px;margin-left:-8px}
+.marca .logo img{display:block;height:64px;width:auto}
+.ficha{display:grid;gap:8px;min-width:0;flex:1 1 420px;max-width:640px;background:var(--band);border-left:4px solid var(--accent);border-radius:0 var(--r) var(--r) 0;padding:12px 16px}
+.ficha .sello{font-family:var(--font-display);font-weight:700;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.ficha dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;margin:0}
+.ficha dl div{min-width:0}
+.ficha dt{font-family:var(--font-code);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.ficha dd{margin:0;font-weight:600;font-size:.9rem;line-height:1.3}
+.ficha .ancho{grid-column:1 / -1}
+.ficha .correo{font-weight:500;overflow-wrap:anywhere;user-select:all}
+.ficha .guia{font-size:.84rem}
+@media (max-width:520px){.ficha dl{grid-template-columns:minmax(0,1fr)}.marca .logo img{height:52px}}
+
+/* Casos */
+.casos{display:grid;gap:8px}
+.casos .fila{display:flex;flex-wrap:wrap;gap:8px}
+.caso-btn{display:grid;gap:1px;text-align:left;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);max-width:290px}
+.caso-btn b{font-size:.88rem;line-height:1.25}
+.caso-btn span{font-family:var(--font-code);font-size:.7rem;color:var(--muted)}
+.caso-btn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.caso-btn.nuevo{border-style:dashed}
+
+/* Pasos */
+.pasos-nav{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:18px 0 22px;padding:0;list-style:none;counter-reset:paso}
+.pasos-nav button{width:100%;display:grid;gap:2px;text-align:left;padding:9px 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);color:var(--ink);min-height:62px}
+.pasos-nav .num{font-family:var(--font-code);font-size:.72rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.pasos-nav .num i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--line)}
+.pasos-nav .num i.ok{background:var(--ok)} .pasos-nav .num i.warn{background:var(--warn)}
+.pasos-nav b{font-size:.9rem;line-height:1.2}
+.pasos-nav button[aria-current="step"]{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 -3px 0 var(--accent)}
+@media (max-width:900px){.pasos-nav{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:480px){.pasos-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,380px);gap:28px;align-items:start}
+@media (max-width:960px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+/* Contenido de los pasos */
+.paso{display:grid;gap:16px}
+.paso > header h2{font-family:var(--font-display);font-size:1.45rem;margin:0;line-height:1.15}
+.paso > header p{margin:4px 0 0;color:var(--muted);max-width:72ch}
+.bloque{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:grid;gap:12px;min-width:0}
+.bloque > h3{margin:0;font-size:1rem;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.bloque > h3 .mono{color:var(--muted);font-weight:400}
+.help{font-family:var(--font-law);font-size:.93rem;color:var(--muted);margin:0;max-width:75ch}
+label.campo{display:grid;gap:5px;font-weight:600;font-size:.9rem;min-width:0}
+label.campo small{font-weight:400;color:var(--muted)}
+input[type=text],input[type=number],input[type=date],textarea,select{font:inherit;font-weight:400;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0}
+textarea{min-height:64px;resize:vertical}
+.marcos{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.marcos input,.opts input,.checks input{position:absolute;opacity:0;pointer-events:none}
+.marcos label,.opts label{display:grid;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;cursor:pointer;background:var(--surface)}
+.marcos label b,.opts label b{font-size:.93rem}
+.marcos label span,.opts label span{font-size:.84rem;color:var(--muted)}
+.marcos input:checked + label,.opts input:checked + label{border-color:var(--accent);background:var(--accent-soft)}
+.marcos input:focus-visible + label,.opts input:focus-visible + label,.checks input:focus-visible + label{outline:2px solid var(--accent);outline-offset:-2px}
+.comp{display:grid;grid-template-columns:44px minmax(0,1fr);gap:4px 12px;align-items:start}
+.letra{font-family:var(--font-code);font-weight:500;font-size:1rem;display:grid;place-items:center;height:38px;border-radius:8px;background:var(--band);color:var(--ink)}
+.comp .ayuda{grid-column:2;font-size:.84rem;color:var(--muted);margin:0}
+.pregunta-out{font-family:var(--font-law);font-size:1.05rem;line-height:1.5;margin:0;padding:12px 14px;border-radius:8px;background:var(--band)}
+.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.checks label{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:8px;cursor:pointer;font-size:.9rem;background:var(--surface)}
+.checks label::before{content:"";flex:0 0 16px;height:16px;margin-top:3px;border:1.5px solid var(--muted);border-radius:4px}
+.checks input:checked + label{border-color:var(--accent);background:var(--accent-soft)}
+.checks input:checked + label::before{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 2.5px var(--surface)}
+.checks label > span{display:grid;gap:1px;min-width:0}
+.checks label small{color:var(--muted);font-size:.82rem}
+.checks label .mono{color:var(--muted)}
+.grupo-t{font-family:var(--font-code);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:4px 0 -4px}
+.fila2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+
+/* Conceptos */
+.concepto{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:grid;min-width:0}
+.concepto.fuera{opacity:.78}
+.concepto > .cab{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px 12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.concepto.fuera > .cab{border-bottom:0}
+.concepto .cab input[type=text]{font-weight:600}
+.concepto .motivo{grid-column:2 / -1;margin:0;font-size:.84rem;color:var(--muted)}
+.toggle{display:inline-flex;align-items:center;gap:8px;font-size:.86rem;font-weight:600;white-space:nowrap;cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--accent)}
+.concepto .cuerpo{display:grid;gap:14px;padding:14px 16px}
+.vocab{display:grid;gap:8px;padding:10px 12px;border-radius:8px;background:var(--ctrl-soft);border:1px solid color-mix(in srgb,var(--ctrl) 25%,transparent)}
+.vocab.libre{background:var(--free-soft);border-color:color-mix(in srgb,var(--free) 25%,transparent)}
+.vocab .vt{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 10px}
+.vocab .vt b{font-size:.88rem;color:var(--ctrl)}
+.vocab.libre .vt b{color:var(--free)}
+.vocab .vt small{color:var(--muted);font-size:.8rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:4px 6px 4px 10px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font-size:.86rem}
+.chip .tx{overflow-wrap:anywhere}
+.chip .tipo{font-family:var(--font-code);font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.chip button{border:0;background:none;color:var(--muted);padding:0 4px;font-size:1rem;line-height:1}
+.chip button:hover{color:var(--bad)}
+.chip .exp{font-family:var(--font-code);font-size:.7rem;border:1px solid var(--line);border-radius:999px;padding:1px 7px;color:var(--ink)}
+.chip .exp[aria-pressed="true"]{background:var(--ctrl);border-color:var(--ctrl);color:var(--surface)}
+.chip .ok{font-family:var(--font-code);font-size:.7rem;border:1px dashed var(--warn);border-radius:999px;padding:1px 7px;color:var(--warn)}
+.chip .ok[aria-pressed="true"]{border-style:solid;border-color:var(--ok);color:var(--ok)}
+.chip a{font-size:.74rem}
+.add{display:flex;gap:6px}
+.add input{flex:1}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:7px 13px;font-weight:600;font-size:.87rem}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn:hover{border-color:var(--accent)}
+.btn.sm{padding:4px 10px;font-size:.8rem}
+.linkbtn{background:none;border:0;color:var(--accent);padding:0;text-decoration:underline;text-underline-offset:2px;font-size:.86rem}
+.avisos-t{margin:0;padding-left:18px;font-size:.84rem;color:var(--warn)}
+details.ideas summary{cursor:pointer;font-weight:600;font-size:.88rem;color:var(--accent)}
+details.ideas ul{margin:8px 0 0;padding-left:20px;font-size:.88rem;display:grid;gap:4px}
+
+/* Estrategias */
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:.84rem}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.codigo{margin:0;overflow-x:auto;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:12px;font-family:var(--font-code);font-size:.8rem;line-height:1.6;white-space:pre}
+.codigo.envuelto{white-space:pre-wrap;overflow-wrap:anywhere}
+table.lineas{border-collapse:collapse;width:100%;font-family:var(--font-code);font-size:.8rem}
+table.lineas td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.lineas td:first-child{color:var(--muted);white-space:nowrap;width:1%}
+table.lineas td:last-child{overflow-wrap:anywhere}
+.tabla-scroll{overflow-x:auto;background:var(--code-bg);border:1px solid var(--line);border-radius:8px}
+.acciones{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.copiado{font-size:.84rem;color:var(--ok)}
+ul.notas{margin:0;padding-left:18px;display:grid;gap:4px;font-size:.88rem;color:var(--muted)}
+ul.notas.av{color:var(--ink)}
+ul.notas.av li::marker{color:var(--warn)}
+.result{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+
+/* PRISMA-S */
+.item{display:grid;grid-template-columns:38px minmax(0,1fr);gap:6px 12px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.item:last-child{border-bottom:0}
+.item .n{font-family:var(--font-code);font-weight:500;font-size:.95rem;display:grid;place-items:center;height:32px;border-radius:8px;border:1px solid var(--line)}
+.item[data-e="ok"] .n{background:color-mix(in srgb,var(--ok) 15%,transparent);border-color:var(--ok);color:var(--ok)}
+.item[data-e="na"] .n{color:var(--muted);border-style:dashed}
+.item[data-e="pend"] .n{background:color-mix(in srgb,var(--warn) 14%,transparent);border-color:var(--warn);color:var(--warn)}
+.item .it{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 12px}
+.item .it b{font-size:.95rem}
+.item .it select{width:auto;padding:4px 8px;font-size:.84rem}
+.item .def{grid-column:2;margin:0;font-family:var(--font-law);font-size:.9rem;color:var(--muted)}
+.item .prop{grid-column:2;margin:0;font-size:.9rem;padding:8px 10px;border-radius:7px;background:var(--band);white-space:pre-line}
+.item .extra{grid-column:2;display:grid;gap:8px}
+.sec-t{font-family:var(--font-display);font-size:1.05rem;margin:6px 0 0;color:var(--accent)}
+table.reg{border-collapse:collapse;width:100%;font-size:.88rem}
+table.reg th,table.reg td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+table.reg td input{max-width:130px}
+table.reg td.num{font-variant-numeric:tabular-nums;text-align:right}
+table.reg tfoot td{font-weight:600}
+
+/* Panel */
+.panel{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 16px);display:grid;gap:14px;max-height:calc(100vh - 32px);overflow-y:auto;overscroll-behavior:contain}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:grid;gap:10px}
+.card h3{margin:0;font-size:.95rem;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.card .pq{font-family:var(--font-law);font-size:.95rem;margin:0}
+.estructura{display:grid;gap:6px}
+.bloque-c{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;align-items:center;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--bg)}
+.bloque-c .letra{height:28px;min-width:28px;font-size:.82rem;background:var(--accent);color:var(--surface)}
+.bloque-c b{font-size:.88rem;line-height:1.25;overflow-wrap:anywhere}
+.bloque-c small{grid-column:2;font-family:var(--font-code);font-size:.72rem;color:var(--muted)}
+.bloque-c small .c{color:var(--ctrl)} .bloque-c small .f{color:var(--free)}
+.bloque-c.filtro .letra{background:var(--ink)}
+.op{font-family:var(--font-code);font-size:.74rem;color:var(--accent);padding-left:12px}
+.fuera-l{font-size:.8rem;color:var(--muted);margin:2px 0 0}
+ul.comprob{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+ul.comprob li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;font-size:.86rem;line-height:1.4}
+.sev{font-family:var(--font-code);font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;padding:2px 6px;border-radius:999px;height:max-content;white-space:nowrap}
+.sev.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 13%,transparent)}
+.sev.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 15%,transparent)}
+.sev.info{color:var(--ctrl);background:var(--ctrl-soft)}
+.sev.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}
+.barra{display:grid;grid-template-columns:repeat(16,1fr);gap:3px}
+.barra span{height:18px;border-radius:3px;background:var(--band);border:1px solid var(--line)}
+.barra span.ok{background:var(--ok);border-color:var(--ok)}
+.barra span.na{background:transparent;border-style:dashed}
+.barra span.pend{background:color-mix(in srgb,var(--warn) 35%,transparent);border-color:var(--warn)}
+.leyenda{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:.78rem;color:var(--muted)}
+
+.nav-pie{display:flex;justify-content:space-between;gap:8px;padding-top:4px}
+.aviso{margin:0;padding:12px 14px;border-left:4px solid var(--accent);border-radius:0 8px 8px 0;background:var(--accent-soft);font-size:.92rem}
+footer{margin-top:44px;padding-top:22px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted);display:grid;gap:6px;max-width:86ch}
+footer p{margin:0}
+footer ol{margin:0;padding-left:20px;display:grid;gap:3px}
+
+.minibar{display:none}
+@media (max-width:960px){
+  .panel{position:static;max-height:none;overflow:visible}
+  .minibar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:5;justify-content:space-between;align-items:center;gap:10px;background:var(--surface);border-top:1px solid var(--line);padding-top:10px;padding-bottom:calc(10px + env(safe-area-inset-bottom, 0px));padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));font-size:.86rem}
+  .minibar b{font-family:var(--font-code);font-weight:500}
+}
+</style>
+</head><body>
+
+<div class="franja" aria-hidden="true"></div>
+<div class="wrap">
+  <header class="top">
+    <div class="marca">
+      <a class="logo" href="https://www.uclm.es" target="_blank" rel="noopener"><img src="logo-uclm.png" alt="Universidad de Castilla-La Mancha" width="520" height="225"></a>
+      <div class="ficha">
+        <span class="sello">Prototipo docente</span>
+        <dl>
+          <div><dt>Asignatura</dt><dd>Evaluación de Tecnología Sanitaria (59728)</dd></div>
+          <div><dt>Plan de estudios</dt><dd>Grado en Ingeniería Biomédica (422)</dd></div>
+          <div><dt>Centro</dt><dd>Escuela Politécnica de Cuenca</dd></div>
+          <div><dt>Curso</dt><dd>4.º curso, primer cuatrimestre, 2026-27</dd></div>
+          <div class="ancho"><dt>Profesor</dt><dd>César Sánchez Meléndez · <span class="correo">cesar.sanchez@uclm.es</span></dd></div>
+        </dl>
+        <span class="guia">Tema 3 · Revisión de evidencias científicas: formulación de la pregunta y estrategia de búsqueda</span>
+      </div>
+    </div>
+    <div class="eyebrow">Revisión sistemática · estrategia de búsqueda · PRISMA-S</div>
+    <h1>Buscador de evidencia</h1>
+    <p>Herramienta docente que guía desde la pregunta estructurada hasta una estrategia de búsqueda reproducible: conceptos, vocabulario controlado (MeSH, Emtree, CINAHL, DeCS) y texto libre, traducidos a la sintaxis de cada base de datos y documentados con la lista PRISMA-S. Genera la cadena; no la ejecuta ni sustituye la revisión por un documentalista.</p>
+    <div class="casos">
+      <span class="grupo-t">Empezar desde un caso de práctica</span>
+      <div class="fila" id="casos" role="group" aria-label="Casos de práctica"></div>
+    </div>
+  </header>
+
+  <p class="aviso" id="aviso-carga">Cargando el buscador… Si este mensaje no desaparece, el navegador no está ejecutando JavaScript: ábrelo desde su dirección web en Safari, Chrome o Firefox.</p>
+
+  <ol class="pasos-nav" id="pasos-nav" aria-label="Pasos"></ol>
+
+  <div class="grid">
+    <main id="paso" aria-live="polite"></main>
+    <aside class="panel" id="panel"></aside>
+  </div>
+
+  <footer>
+    <p><strong>Prototipo docente</strong> de la asignatura Evaluación de Tecnología Sanitaria (59728), Grado en Ingeniería Biomédica, Escuela Politécnica de Cuenca, Universidad de Castilla-La Mancha. Autor: <a href="https://csmelendez.github.io/personal/#docencia" rel="author">César Sánchez Meléndez</a>.</p>
+    <p><strong>Licencias.</strong> Código: <a href="https://joinup.ec.europa.eu/sites/default/files/custom-page/attachment/eupl_v1.2_es.pdf" target="_blank" rel="noopener">EUPL-1.2</a>. Casos de práctica y textos: <a href="https://creativecommons.org/licenses/by/4.0/deed.es" target="_blank" rel="noopener">CC BY 4.0</a>. El logotipo de la UCLM es marca de la Universidad de Castilla-La Mancha y no está incluido en estas licencias. Los filtros de búsqueda y los vocabularios citados (Cochrane, MeSH, Emtree, CINAHL, DeCS) pertenecen a sus autores. Fuentes incrustadas: SIL Open Font License 1.1. Código fuente, propuestas de casos y avisos de errores en <a href="https://github.com/csmelendez/buscaPICO" target="_blank" rel="noopener">GitHub</a>. Otra herramienta de la serie: <a href="../clasificaMD/index.html">Clasificador de productos sanitarios MDR/IVDR</a>.</p>
+    <p><strong>Uso orientativo.</strong> La sintaxis generada debe comprobarse en cada plataforma antes de ejecutarla y documentarla. Los términos de vocabulario controlado de los casos de práctica están marcados como «sin comprobar» a propósito: valídalos en el tesauro correspondiente. El progreso se guarda solo en este navegador.</p>
+    <p>Referencias:</p>
+    <ol>
+      <li>Rethlefsen ML, Kirtley S, Waffenschmidt S, et al. PRISMA-S: an extension to the PRISMA Statement for Reporting Literature Searches in Systematic Reviews. <i>Syst Rev</i>. 2021;10:39. <a href="https://doi.org/10.1186/s13643-020-01542-z" target="_blank" rel="noopener">doi:10.1186/s13643-020-01542-z</a></li>
+      <li>Lefebvre C, Glanville J, Briscoe S, et al. Chapter 4: Searching for and selecting studies, y su Technical Supplement (actualizado en septiembre de 2024). En: Higgins JPT, et al. (eds.). <i>Cochrane Handbook for Systematic Reviews of Interventions</i>, v6.5. <a href="https://training.cochrane.org/handbook" target="_blank" rel="noopener">training.cochrane.org/handbook</a></li>
+      <li>Filtro Cochrane de ECA (versión de máxima sensibilidad, revisión de 2008), formato PubMed: <a href="https://work.cochrane.org/pubmed" target="_blank" rel="noopener">work.cochrane.org/pubmed</a></li>
+      <li>McGowan J, Sampson M, Salzwedel DM, et al. PRESS Peer Review of Electronic Search Strategies: 2015 Guideline Statement. <i>J Clin Epidemiol</i>. 2016;75:40-46.</li>
+      <li>Page MJ, McKenzie JE, Bossuyt PM, et al. The PRISMA 2020 statement. <i>BMJ</i>. 2021;372:n71.</li>
+      <li>Cooke A, Smith D, Booth A. Beyond PICO: the SPIDER tool for qualitative evidence synthesis. <i>Qual Health Res</i>. 2012;22(10):1435-1443.</li>
+      <li>Sintaxis: ayuda de PubMed (<a href="https://pubmed.ncbi.nlm.nih.gov/help/" target="_blank" rel="noopener">pubmed.ncbi.nlm.nih.gov/help</a>), proximidad en PubMed (<a href="https://libguides.lib.umanitoba.ca/pubmed/proximity" target="_blank" rel="noopener">guía de la Univ. de Manitoba</a>), Cochrane Library (<a href="https://libguides.sgul.ac.uk/cochrane/advsearch" target="_blank" rel="noopener">guía de St George's</a>), Embase (<a href="https://guides.lib.uw.edu/embase/search" target="_blank" rel="noopener">guía de la Univ. de Washington</a>). Parte de los descriptores MeSH de los casos se contrastó con la API de MeSH de la NLM en octubre de 2026; el resto, y todos los términos Emtree, CINAHL y DeCS, deben comprobarse.</li>
+    </ol>
+  </footer>
+</div>
+
+<div class="minibar" id="minibar"></div>
+
+<script>window.addEventListener("error", function (e) { var a = document.getElementById("aviso-carga"); if (a) { a.hidden = false; a.textContent = "No se ha podido cargar el buscador (" + (e.message || "error desconocido") + "). Indica este mensaje, el navegador y el dispositivo al profesor."; } });</script>
+<script src="motor.js"></script>
+<script src="datos.js"></script>
+<script src="app.js"></script>
+
+</body></html>
